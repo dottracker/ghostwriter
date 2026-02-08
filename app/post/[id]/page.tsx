@@ -4,51 +4,44 @@ import Link from 'next/link';
 
 export const revalidate = 0;
 
-// NOTICE: params is now a Promise in Next.js 15
 export default async function Post({ params }: { params: Promise<{ id: string }> }) {
-  
-  // 1. Await the params to get the actual ID from the URL
-  const resolvedParams = await params;
-  const id = resolvedParams.id;
+  const { id } = await params;
+  const { data: post } = await supabase.from('posts').select('*').eq('id', id).single();
 
-  // 2. Fetch the specific post
-  const { data: post, error } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  // 3. Handle errors or missing post
-  if (!post || error) {
-    console.error("Supabase Error:", error); // This helps you debug in the console
-    return (
-      <div className="max-w-3xl mx-auto p-10 text-center">
-        <h1 className="text-2xl font-bold">Post not found</h1>
-        <p className="text-gray-500 mb-4">We couldn't find a post with ID: {id}</p>
-        <Link href="/" className="text-blue-500 underline">Go back home</Link>
-      </div>
-    );
-  }
+  if (!post) return <div className="p-20 text-center font-serif text-2xl text-[#8C7171]">Taking a nap... (Post Not Found)</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 sm:p-10">
-      <Link href="/" className="text-gray-500 hover:text-black mb-8 block">
-        ← Back to all posts
-      </Link>
-      
-      <header className="mb-10">
-        <span className="text-blue-600 text-sm font-bold uppercase">{post.category}</span>
-        <h1 className="text-4xl sm:text-5xl font-extrabold mt-4 text-gray-900 leading-tight">
-          {post.title}
-        </h1>
-        <p className="text-gray-400 mt-4 text-sm">
-          Published on {new Date(post.created_at).toLocaleDateString()}
-        </p>
-      </header>
+    <div className="min-h-screen py-16 px-6">
+      <div className="max-w-2xl mx-auto">
+        <Link 
+          href="/" 
+          className="inline-flex items-center text-[#94A684] font-bold mb-12 hover:translate-x-[-4px] transition-transform"
+        >
+          <span className="mr-2">←</span> Back to the library
+        </Link>
 
-      <article className="prose prose-lg max-w-none border-t pt-8">
-        <ReactMarkdown>{post.content}</ReactMarkdown>
-      </article>
+        <header className="mb-12">
+          <div className="text-[#94A684] font-bold uppercase tracking-[0.2em] text-[10px] mb-4">
+            {post.category} • {new Date(post.created_at).toLocaleDateString()}
+          </div>
+          <h1 className="font-serif text-4xl md:text-5xl text-[#483434] leading-tight mb-6">
+            {post.title}
+          </h1>
+          <div className="h-1 w-20 bg-[#E2C799] rounded-full"></div>
+        </header>
+
+        {/* The content area */}
+        <article className="prose prose-stone prose-headings:font-serif prose-headings:text-[#483434] prose-p:text-[#6B5E5E] prose-p:leading-[1.8] text-lg max-w-none">
+          <ReactMarkdown>{post.content}</ReactMarkdown>
+        </article>
+
+        <div className="mt-20 p-8 bg-[#F2E3DB] rounded-[2rem] text-center border-2 border-dashed border-[#E2C799]">
+          <p className="font-serif italic text-[#8C7171]">
+            This entry was prepared by your AI companion, Gem. 
+            Best enjoyed with a cup of earl grey tea.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

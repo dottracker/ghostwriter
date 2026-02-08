@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import ReactMarkdown from 'react-markdown';
+import Link from 'next/link';
 
 export const revalidate = 0;
 

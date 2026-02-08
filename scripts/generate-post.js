@@ -12,7 +12,7 @@ const topics = ["Future Tech", "Global Economy", "Philosophy", "Arts", "Science"
 
 async function generate() {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
     const topic = topics[Math.floor(Math.random() * topics.length)];
     
     console.log(`Asking Gemini to write about: ${topic}...`);

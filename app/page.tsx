@@ -13,7 +13,7 @@ export default async function Home() {
         {/* Header section */}
         <header className="text-center mb-20">
           <div className="inline-block px-4 py-1 mb-4 border-y border-[#94A684] text-[#94A684] tracking-[0.2em] text-xs uppercase font-bold">
-            Freshly Baked Every Six Hours
+            Freshly Baked Every Few Hours
           </div>
           <h1 className="font-serif text-5xl md:text-6xl text-[#483434] mb-4">
             The Cozy Scribe
@@ -41,7 +41,7 @@ export default async function Home() {
                 {post.title}
               </h2>
               
-              <p className="text-[#6B5E5E] leading-relaxed mb-8 line-clamp-3">
+              <p className="text-[#6B5E5E] leading-relaxed mb-8 line-clamp-3 whitespace-pre-wrap">
                 {post.content.substring(0, 180).replace(/[#*]/g, '')}...
               </p>
 

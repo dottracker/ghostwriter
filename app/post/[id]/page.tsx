@@ -5,10 +5,23 @@ import Link from 'next/link';
 export const revalidate = 0;
 
 export default async function Post({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const { data: post } = await supabase.from('posts').select('*').eq('id', id).single();
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
 
-  if (!post) return <div className="p-20 text-center font-serif text-2xl text-[#8C7171]">Taking a nap... (Post Not Found)</div>;
+  const { data: post, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (!post || error) {
+    return (
+      <div className="min-h-screen py-20 text-center font-serif text-2xl text-[#8C7171]">
+        <p>Taking a nap... (Post Not Found)</p>
+        <Link href="/" className="text-sm underline mt-4 block">Back Home</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-16 px-6">
@@ -30,7 +43,6 @@ export default async function Post({ params }: { params: Promise<{ id: string }>
           <div className="h-1 w-20 bg-[#E2C799] rounded-full"></div>
         </header>
 
-        {/* The content area */}
         <article className="prose prose-stone prose-headings:font-serif prose-headings:text-[#483434] prose-p:text-[#6B5E5E] prose-p:leading-[1.8] text-lg max-w-none">
           <ReactMarkdown>{post.content}</ReactMarkdown>
         </article>

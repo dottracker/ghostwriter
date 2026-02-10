@@ -3,78 +3,112 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { createClient } = require("@supabase/supabase-js");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-// Broad categories to keep the blog diverse
-const categories = ["Politics", "Arts", "Science", "Jobs", "Economy", "Technology", "Family", "Global Issues", "Philosophy"];
+const skillCategories = [
+  // Creative & Artistic
+  "Textile & Fiber Arts", "Visual Design & Illustration", "Narrative & Creative Writing", 
+  "Music Theory & Performance", "Cinematography & Lighting", "Sculpture & Pottery",
+  "Architectural Sketching", "Calligraphy & Typography",
 
-async function generate() {
+  // Technology & Digital Mastery
+  "Artificial Intelligence & Prompting", "Cybersecurity & Privacy", "Software Architecture", 
+  "Data Science & Visualization", "Hardware Engineering & Robotics", "Game Design Mechanics", 
+  "Digital Marketing Strategy", "Cloud Infrastructure", "Blockchain & Decentralized Systems",
+
+  // Science & Discovery
+  "Astrophysics & Space Observation", "Microbiology & Genetics", "Environmental Science", 
+  "Physics & Quantum Logic", "Botany & Plant Biology", "Marine Biology", 
+  "Geology & Mineralogy", "Theoretical Mathematics",
+
+  // Hands-on Craft & Trade
+  "Fine Woodworking", "Traditional Blacksmithing", "Modern Electronics Repair", 
+  "Automotive Engineering", "Leatherworking", "Clockmaking & Horology", 
+  "Glassblowing", "Interior Design & Spatial Planning",
+
+  // Nature & Self-Reliance
+  "Permaculture & Sustainable Farming", "Wilderness Survival & Tracking", "Navigation & Cartography", 
+  "Herbalism & Apothecary", "Beekeeping & Entomology", "Meteorology & Weather Reading", 
+  "Off-Grid Energy Systems", "Disaster Preparedness",
+
+  // Health & Human Performance
+  "Sports Science & Biomechanics", "Nutrition & Culinary Chemistry", "Mental Resilience & Psychology", 
+  "First Aid & Wilderness Medicine", "Yoga & Mobility Science", "Neuroscience Basics", 
+  "Public Health & Epidemiology",
+
+  // Business, Law & Society
+  "Financial Literacy & Investing", "Microeconomics & Global Trade", "Legal Reasoning & Law", 
+  "Project Management", "Entrepreneurial Strategy", "Public Speaking & Rhetoric", 
+  "Philosophy & Ethics", "Sociological Research", "Linguistics & Language Structure",
+
+  // Household & Life Skills
+  "Culinary Arts & Pastry", "Modern Home Economics", "Clothing Repair & Tailoring", 
+  "Furniture Restoration", "Personal Organization Systems", "Urban Gardening", 
+  "Plumbing & Electrical Basics", "Bicycle Maintenance"
+];
+
+async function generateSkillTree() {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
-    // 1. FETCH RECENT HISTORY
-    // We get the last 20 titles so Gemini knows what NOT to write about.
-    const { data: recentPosts } = await supabase
-      .from('posts')
-      .select('title')
-      .order('created_at', { ascending: false })
-      .limit(20);
+    // 1. Fetch history to avoid repeats
+    const { data: recent } = await supabase.from('posts').select('title').limit(20);
+    const pastTitles = recent?.map(p => p.title).join(", ") || "None";
+    const category = skillCategories[Math.floor(Math.random() * skillCategories.length)];
 
-    const pastTitles = recentPosts?.map(p => p.title).join(", ") || "None yet";
-    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    // 2. Brainstorm a specific niche skill
+    const topicPrompt = `Select a very specific, factual, and useful skill to learn within the category of ${category}. 
+    It must be something specific (e.g., 'Identifying Edible Mushrooms' instead of 'Nature'). 
+    Avoid these previous skills: [${pastTitles}]. Return only the name of the skill.`;
+    
+    const topicRes = await model.generateContent(topicPrompt);
+    const skillName = topicRes.response.text().trim();
 
-    console.log(`Step 1: Brainstorming a unique angle for ${randomCategory}...`);
+    console.log(`Generating Roadmap for: ${skillName}`);
 
-    // 2. BRAINSTORM A UNIQUE TOPIC
-    const brainstormPrompt = `
-      You are an expert editorial director. We are writing a blog about ${randomCategory}.
-      Here are the titles of the posts we have already published: [${pastTitles}].
+    // 3. Generate the Roadmap
+    const prompt = `
+      You are a Senior Curriculum Architect. Create a literal, factual, and easy-to-understand learning roadmap for: "${skillName}".
       
-      Your task: Invent a very specific, unique, and insightful "niche topic" within ${randomCategory} that is DIFFERENT from the ones above. 
-      Avoid generic "Future of..." or "Basics of..." topics. Find a "weird" angle, a forgotten history, or a counter-intuitive theory.
-      
-      Return ONLY a single sentence that will be the specific topic/prompt for the next writer.
-    `;
-
-    const topicResult = await model.generateContent(brainstormPrompt);
-    const nicheTopic = topicResult.response.text().trim();
-
-    console.log(`Step 2: Writing the article about: "${nicheTopic}"...`);
-
-    // 3. WRITE THE ACTUAL ARTICLE
-    const writePrompt = `
-      You are a world-class essayist. Write a deeply insightful blog post about this specific topic: "${nicheTopic}".
-      
+      Output strictly in JSON format:
+      {
+        "title": "${skillName}",
+        "description": "A 2-sentence objective overview of what this skill is.",
+        "difficulty": "Beginner | Intermediate | Advanced",
+        "time_estimate": "e.g., 2 weeks, 5 hours, 3 months",
+        "tags": ["tag1", "tag2"],
+        "steps": [
+          { "step": 1, "task": "Name of task", "details": "Factual explanation of how to do it." },
+          { "step": 2, "task": "Name of next task", "details": "Detailed instructions." }
+        ]
+      }
       Requirements:
-      - Use a "Cottagecore/Rainy Day" intellectual tone (thoughtful, cozy, but brilliant).
-      - Do not use cliches. 
-      - Format the output strictly as a JSON object: {"title": "...", "content": "..."}
-      FORMATTING INSTRUCTIONS:
-        - Use Markdown for the content.
-        - IMPORTANT: You MUST use exactly two newline characters (\\n\\n) between every paragraph to ensure clear spacing.
-        - Use ## for subheadings if the post is long.
-        - Ensure the title is poetic and catchy.
+      - At least 5 steps.
+      - Tone: Factual, helpful, and literal. No poetic fluff.
     `;
 
-    const articleResult = await model.generateContent(writePrompt);
-    const text = articleResult.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
-    const article = JSON.parse(text);
+    const result = await model.generateContent(prompt);
+    const data = JSON.parse(result.response.text().replace(/```json/g, "").replace(/```/g, ""));
 
-    // 4. SAVE TO CLOUD
-    const { error } = await supabase.from('posts').insert([
-      { title: article.title, content: article.content, category: randomCategory }
-    ]);
+    // 4. Save to Supabase
+    const { error } = await supabase.from('posts').insert([{
+      title: data.title,
+      description: data.description,
+      difficulty: data.difficulty,
+      time_estimate: data.time_estimate,
+      tags: data.tags,
+      steps: data.steps,
+      category: category,
+      content: "" // We keep this for compatibility but use 'steps' column instead
+    }]);
 
     if (error) throw error;
-    console.log("Success! New unique post added:", article.title);
+    console.log("Roadmap Saved Successfully!");
 
   } catch (e) {
-    console.error("Error in generation:", e);
+    console.error(e);
     process.exit(1);
   }
 }
 
-generate();
+generateSkillTree();

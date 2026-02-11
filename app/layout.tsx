@@ -5,8 +5,8 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif"
 const quicksand = Quicksand({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata = {
-  title: "The Cozy Scribe",
-  description: "Freshly baked insights for a rainy day.",
+  title: "The Apprentice's Library",
+  description: "Curated roadmaps for the curious mind.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

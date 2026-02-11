@@ -1,11 +1,11 @@
-// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: 'class', // This is crucial for dark mode support
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}"
   ],
   theme: {
     extend: {
@@ -14,36 +14,18 @@ const config: Config = {
         serif: ["var(--font-playfair)", "serif"],
       },
       colors: {
-        cozy: {
-          cream: "#FDF8F5",
-          sage: "#94A684",
-          brown: "#483434",
-          paper: "#F2E3DB",
-          accent: "#E2C799",
+        study: {
+          light: "#F0F7FF", // Soft Pastel Blue
+          accent: "#A5D7FF", // Bolder Pastel Blue
+          ink: "#1E293B",   // Deep Slate for text
+          paper: "#FFFFFF",
+          // Dark Mode Palette
+          darkBg: "#0F172A",
+          darkCard: "#1E293B",
         }
-        
-      },
-      // THIS PART ADDS EXTRA SPACING
-      typography: {
-        DEFAULT: {
-          css: {
-            p: {
-              marginTop: '1.5em',    // Adds more space above paragraphs
-              marginBottom: '1.5em', // Adds more space below paragraphs
-              lineHeight: '1.8',     // Makes the text feel more airy
-            },
-            h2: {
-              marginTop: '2em',
-              marginBottom: '1em',
-              color: '#483434',
-            },
-          },
-        },
-      },
+      }
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [require('@tailwindcss/typography')],
 };
 export default config;

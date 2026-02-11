@@ -1,7 +1,7 @@
 name: Auto Writer
 on:
   schedule:
-    - cron: '0 */6 * * *' # Runs every 6 hours
+    - cron: '21 */3 * * *' 
   workflow_dispatch: # Allows manual click to test
 
 jobs:

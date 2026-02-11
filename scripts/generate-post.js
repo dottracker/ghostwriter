@@ -49,7 +49,7 @@ const skillCategories = [
 
 async function generateSkillTree() {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // 1. Fetch history to avoid repeats
     const { data: recent } = await supabase.from('posts').select('title').limit(20);

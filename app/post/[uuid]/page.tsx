@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import ThemeToggle from '@/components/ThemeToggle';
+import { BookOpen, CheckCircle2, GraduationCap, Search, ArrowLeft } from 'lucide-react';
 
 // Define the shape of a Roadmap Step
 interface Step {
@@ -24,7 +25,6 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
         const resolvedParams = await params;
         const uuid = resolvedParams.uuid;
 
-        // 1. Fetch the Roadmap from Supabase using UUID
         const { data: roadmap, error } = await supabase
           .from('posts')
           .select('*')
@@ -35,8 +35,6 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
 
         if (roadmap) {
           setData(roadmap);
-          
-          // 2. Load Progress from LocalStorage
           const savedProgress = localStorage.getItem(`progress-${roadmap.post_uuid}`);
           if (savedProgress) {
             setCompleted(JSON.parse(savedProgress));
@@ -58,14 +56,16 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
       : [...completed, index];
 
     setCompleted(newCompleted);
-    // Save to LocalStorage using the UUID
     localStorage.setItem(`progress-${data.post_uuid}`, JSON.stringify(newCompleted));
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-study-light dark:bg-study-darkBg transition-colors">
-        <p className="font-serif text-2xl animate-pulse text-study-accent">Unrolling the scrolls...</p>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-study-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="font-serif text-2xl text-study-accent">Opening the scrolls...</p>
+        </div>
       </div>
     );
   }
@@ -73,59 +73,58 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
   if (!data) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-study-light dark:bg-study-darkBg transition-colors px-6 text-center">
-        <h1 className="font-serif text-3xl mb-4">The Library has no record of this scroll.</h1>
+        <h1 className="font-serif text-3xl mb-4 dark:text-slate-100">The Library has no record of this scroll.</h1>
         <Link href="/" className="px-6 py-2 bg-study-accent text-white rounded-full font-bold">Return Home</Link>
       </div>
     );
   }
 
-  // Calculate Progress Percentage
   const progressPercent = Math.round((completed.length / data.steps.length) * 100);
 
   return (
-    <div className="min-h-screen bg-study-light dark:bg-study-darkBg text-study-ink dark:text-gray-100 py-12 px-4 transition-colors duration-300">
+    <div className="min-h-screen bg-study-light dark:bg-[#0F172A] text-study-ink dark:text-slate-100 py-12 px-4 transition-colors duration-300">
       <div className="max-w-3xl mx-auto">
         
         {/* TOP NAVIGATION */}
         <nav className="flex justify-between items-center mb-10">
-          <Link href="/" className="group flex items-center gap-2 px-5 py-2 bg-white dark:bg-study-darkCard rounded-full shadow-sm hover:shadow-md transition-all">
-            <span className="group-hover:-translate-x-1 transition-transform">←</span>
+          <Link href="/" className="group flex items-center gap-2 px-5 py-2 bg-white dark:bg-slate-800 rounded-full shadow-sm hover:shadow-md transition-all dark:text-slate-200">
+            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             <span className="font-bold text-sm">Library</span>
           </Link>
           <ThemeToggle />
         </nav>
 
         {/* MAIN CARD */}
-        <article className="bg-white dark:bg-study-darkCard rounded-[3rem] shadow-2xl overflow-hidden border border-white dark:border-gray-800">
+        <article className="bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl overflow-hidden border border-white dark:border-slate-700">
           
           {/* HEADER SECTION */}
-          <header className="pt-12 pb-8 px-8 md:px-12 text-center border-b border-gray-100 dark:border-gray-800">
+          <header className="pt-12 pb-8 px-8 md:px-12 text-center border-b border-gray-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
             <div className="flex justify-center gap-3 mb-6">
-              <span className="px-4 py-1 bg-study-accent/20 text-study-accent text-[10px] font-bold rounded-full uppercase tracking-widest">
+              <span className="px-4 py-1 bg-study-accent/10 text-study-accent dark:text-blue-400 text-[10px] font-bold rounded-full uppercase tracking-widest border border-study-accent/20">
                 {data.category}
               </span>
-              <span className="px-4 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-bold rounded-full uppercase tracking-widest">
+              <span className="px-4 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 text-[10px] font-bold rounded-full uppercase tracking-widest">
                 {data.difficulty}
               </span>
             </div>
             
-            <h1 className="font-serif text-4xl md:text-6xl mb-6 leading-tight">
+            <h1 className="font-serif text-4xl md:text-6xl mb-6 leading-tight text-slate-900 dark:text-white">
               {data.title}
             </h1>
             
-            <p className="text-gray-500 dark:text-gray-400 text-lg italic font-serif max-w-xl mx-auto">
+            <p className="text-gray-600 dark:text-slate-300 text-lg italic font-serif max-w-xl mx-auto leading-relaxed">
               "{data.description}"
             </p>
 
             {/* PROGRESS OVERVIEW */}
             <div className="mt-10 max-w-md mx-auto">
-              <div className="flex justify-between text-xs font-bold uppercase text-study-accent mb-2">
-                <span>Your Progress</span>
-                <span>{progressPercent}% Complete</span>
+              <div className="flex justify-between text-xs font-bold uppercase text-study-accent dark:text-blue-400 mb-2">
+                <span>Learning Progress</span>
+                <span>{progressPercent}%</span>
               </div>
-              <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-gray-200 dark:bg-slate-900 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-study-accent transition-all duration-700 ease-out"
+                  className="h-full bg-study-accent dark:bg-blue-500 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -133,10 +132,10 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
           </header>
 
           {/* ROADMAP STEPS */}
-          <div className="p-8 md:p-12 space-y-6">
-            <h2 className="font-serif text-2xl mb-8 flex items-center gap-3">
-              <span className="w-8 h-8 rounded-lg bg-study-accent flex items-center justify-center text-white text-sm">✓</span>
-              Learning Path
+          <div className="p-8 md:p-12 space-y-6 bg-white dark:bg-slate-800">
+            <h2 className="font-serif text-2xl mb-8 flex items-center gap-3 dark:text-white">
+              <BookOpen className="text-study-accent dark:text-blue-400" />
+              The Curriculum
             </h2>
 
             {data.steps.map((item: Step, index: number) => (
@@ -145,15 +144,15 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
                 onClick={() => toggleStep(index)}
                 className={`group cursor-pointer p-6 rounded-[2rem] border-2 transition-all flex items-start gap-6 relative ${
                   completed.includes(index) 
-                  ? 'border-study-accent bg-blue-50/30 dark:bg-blue-900/10' 
-                  : 'border-study-light dark:border-gray-800 bg-white dark:bg-gray-900/40 hover:border-study-accent/40'
+                  ? 'border-study-accent bg-blue-50/30 dark:bg-blue-900/20 dark:border-blue-500' 
+                  : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-study-accent/40'
                 }`}
               >
                 {/* Step Number Bubble */}
-                <div className={`w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-xl transition-colors ${
+                <div className={`w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-xl transition-all ${
                   completed.includes(index) 
-                  ? 'bg-study-accent text-white' 
-                  : 'bg-study-light dark:bg-gray-800 text-gray-400'
+                  ? 'bg-study-accent text-white scale-90' 
+                  : 'bg-study-light dark:bg-slate-900 text-slate-400'
                 }`}>
                   {index + 1}
                 </div>
@@ -161,11 +160,12 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
                 {/* Content */}
                 <div className="flex-1">
                   <h3 className={`font-serif text-2xl mb-2 transition-all ${
-                    completed.includes(index) ? 'opacity-40 line-through text-gray-400' : 'text-study-ink dark:text-gray-100'
+                    completed.includes(index) ? 'opacity-40 line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
                   }`}>
                     {item.task}
                   </h3>
-                  <div className={`text-gray-600 dark:text-gray-400 leading-relaxed prose prose-sm dark:prose-invert max-w-none transition-opacity ${
+                  {/* prose-invert fixes the Markdown text color in dark mode */}
+                  <div className={`text-slate-600 dark:text-slate-300 leading-relaxed prose prose-slate dark:prose-invert max-w-none transition-opacity ${
                     completed.includes(index) ? 'opacity-30' : 'opacity-100'
                   }`}>
                     <ReactMarkdown>{item.details}</ReactMarkdown>
@@ -174,19 +174,17 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
 
                 {/* Checkmark Indicator */}
                 {completed.includes(index) && (
-                  <div className="absolute top-6 right-8 text-study-accent text-2xl animate-bounce-short">
-                    ✨
-                  </div>
+                  <CheckCircle2 className="absolute top-6 right-8 text-study-accent dark:text-blue-400 animate-in fade-in zoom-in duration-300" />
                 )}
               </div>
             ))}
           </div>
 
           {/* FOOTER / RESEARCH TOOLS */}
-          <footer className="bg-gray-50 dark:bg-gray-900/50 p-10 border-t border-gray-100 dark:border-gray-800 text-center">
-            <h4 className="font-serif text-xl mb-4 text-study-ink dark:text-gray-200">Deepen Your Knowledge</h4>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
-              Want more factual resources? We've prepared a custom search to help you find verified tutorials and papers.
+          <footer className="bg-slate-50 dark:bg-slate-900/50 p-10 border-t border-slate-100 dark:border-slate-700 text-center">
+            <h4 className="font-serif text-xl mb-4 text-slate-900 dark:text-white">Expand Your Horizons</h4>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 max-w-sm mx-auto">
+              Our AI provided the roadmap, but these factual search engines will provide the depth.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
@@ -194,36 +192,33 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
                 href={`https://www.google.com/search?q=how+to+master+${encodeURIComponent(data.title)}+tutorial+factual`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-8 py-3 bg-white dark:bg-study-darkCard text-study-accent border-2 border-study-accent/20 font-bold rounded-2xl hover:bg-study-accent/5 transition-all"
+                className="px-8 py-3 bg-study-accent dark:bg-blue-600 text-white font-bold rounded-2xl hover:scale-105 hover:shadow-lg transition-all flex items-center gap-2 shadow-md"
               >
-                <span>🔍</span> Search Google for Tutorials
+                <Search size={18} /> Search Tutorials
               </a>
               
               <a 
                 href={`https://scholar.google.com/scholar?q=${encodeURIComponent(data.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-8 py-3 bg-white dark:bg-study-darkCard text-study-accent border-2 border-study-accent/20 font-bold rounded-2xl hover:bg-study-accent/5 transition-all"
+                className="px-8 py-3 bg-white dark:bg-slate-800 text-study-accent dark:text-blue-400 border-2 border-study-accent/20 dark:border-blue-400/20 font-bold rounded-2xl hover:bg-study-accent/5 transition-all flex items-center gap-2 shadow-sm"
               >
-                🎓 Academic Resources
+                <GraduationCap size={18} /> Academic Sources
               </a>
             </div>
 
-            <p className="mt-12 text-[10px] uppercase tracking-widest text-gray-400 font-bold italic">
+            <p className="mt-12 text-[10px] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 font-bold">
               Archived by AI Mentor • {new Date(data.created_at).toLocaleDateString()}
             </p>
           </footer>
         </article>
       </div>
 
-      {/* Added some custom animation to the globals.css later */}
       <style jsx global>{`
-        @keyframes bounce-short {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        .animate-bounce-short {
-          animation: bounce-short 2s infinite;
+        .prose-invert {
+          --tw-prose-body: #cbd5e1;
+          --tw-prose-headings: #f8fafc;
+          --tw-prose-bold: #f8fafc;
         }
       `}</style>
     </div>

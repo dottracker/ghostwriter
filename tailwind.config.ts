@@ -15,13 +15,13 @@ const config: Config = {
       },
       colors: {
         study: {
-          light: "#F0F7FF", // Soft Pastel Blue
-          accent: "#A5D7FF", // Bolder Pastel Blue
-          ink: "#1E293B",   // Deep Slate for text
-          paper: "#FFFFFF",
-          // Dark Mode Palette
-          darkBg: "#0F172A",
-          darkCard: "#1E293B",
+          light: "#F0F7FF", 
+          accent: "#3B82F6", // Brighter blue for better contrast
+          ink: "#1E293B",   
+          // High-Contrast Dark Mode
+          darkBg: "#0F172A",   // Deep midnight blue
+          darkCard: "#1E293B", // Slightly lighter slate for cards
+          darkText: "#F8FAFC", // Almost white for maximum readability
         }
       }
     },

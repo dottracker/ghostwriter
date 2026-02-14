@@ -192,7 +192,7 @@ export default function RoadmapPage({ params }: { params: Promise<{ uuid: string
                 href={`https://www.google.com/search?q=how+to+master+${encodeURIComponent(data.title)}+tutorial+factual`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-8 py-3 bg-study-accent dark:bg-blue-600 text-white font-bold rounded-2xl hover:scale-105 hover:shadow-lg transition-all flex items-center gap-2 shadow-md"
+                className="px-8 py-3 bg-white dark:bg-slate-800 text-study-accent dark:text-blue-400 border-2 border-study-accent/20 dark:border-blue-400/20 font-bold rounded-2xl hover:bg-study-accent/5 transition-all flex items-center gap-2 shadow-sm"
               >
                 <Search size={18} /> Search Tutorials
               </a>

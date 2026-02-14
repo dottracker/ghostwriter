@@ -11,7 +11,7 @@ const redis = new Redis({
 // Define the limit: 10 requests every 10 seconds per IP
 const ratelimit = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.slidingWindow(5, "10 s"),
+  limiter: Ratelimit.slidingWindow(10, "10 s"),
 });
 
 export default async function middleware(request: NextRequest) {

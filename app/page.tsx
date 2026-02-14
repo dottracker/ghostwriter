@@ -61,12 +61,10 @@ export default function Home() {
     <main className="min-h-screen bg-[#F0F7FF] dark:bg-[#0F172A] transition-colors duration-300 py-12 px-6">
       <div className="max-w-6xl mx-auto">
         
-        {/* NAV */}
+        {/* NAV (Fixed Tags) */}
         <nav className="flex justify-between items-center mb-12">
           <div className="flex items-center gap-3">
-             <img src="/logo.png" alt="Library Logo" className="w-12 h-12 object-contain" />
-             <span className="font-serif text-2xl font-bold text-slate-900 dark:text-white">Library</span>
-          </div>
+             <img src="/logo.png" alt="Library" className="w-12 h-12 object-contain" />
              <span className="font-serif text-2xl font-bold text-slate-900 dark:text-white">Library</span>
           </div>
           <div className="flex items-center gap-4">

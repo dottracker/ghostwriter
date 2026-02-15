@@ -1,4 +1,5 @@
 import { Playfair_Display, Quicksand } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]"></div>
         
         <div className="relative z-10">{children}</div>
+        <Analytics />
       </body>
     </html>
   );

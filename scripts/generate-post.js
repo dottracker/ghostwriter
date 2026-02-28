@@ -6,60 +6,50 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const skillCategories = [
-  // Creative & Artistic
-  "Textile & Fiber Arts", "Visual Design & Illustration", "Narrative & Creative Writing", 
-  "Music Theory & Performance", "Cinematography & Lighting", "Sculpture & Pottery",
-  "Architectural Sketching", "Calligraphy & Typography",
+  "Creative & Artistic",
 
-  // Technology & Digital Mastery
-  "Artificial Intelligence & Prompting", "Cybersecurity & Privacy", "Software Architecture", 
-  "Data Science & Visualization", "Hardware Engineering & Robotics", "Game Design Mechanics", 
-  "Digital Marketing Strategy", "Cloud Infrastructure", "Blockchain & Decentralized Systems",
+  "Technology & Digital Mastery",
 
-  // Science & Discovery
-  "Astrophysics & Space Observation", "Microbiology & Genetics", "Environmental Science", 
-  "Physics & Quantum Logic", "Botany & Plant Biology", "Marine Biology", 
-  "Geology & Mineralogy", "Theoretical Mathematics",
+  "Science & Discovery",
 
-  // Hands-on Craft & Trade
-  "Fine Woodworking", "Traditional Blacksmithing", "Modern Electronics Repair", 
-  "Automotive Engineering", "Leatherworking", "Clockmaking & Horology", 
-  "Glassblowing", "Interior Design & Spatial Planning",
+  "Hands-on Craft & Trade",
 
-  // Nature & Self-Reliance
-  "Permaculture & Sustainable Farming", "Wilderness Survival & Tracking", "Navigation & Cartography", 
-  "Herbalism & Apothecary", "Beekeeping & Entomology", "Meteorology & Weather Reading", 
-  "Off-Grid Energy Systems", "Disaster Preparedness",
+  "Nature & Self-Reliance",
 
-  // Health & Human Performance
-  "Sports Science & Biomechanics", "Nutrition & Culinary Chemistry", "Mental Resilience & Psychology", 
-  "First Aid & Wilderness Medicine", "Yoga & Mobility Science", "Neuroscience Basics", 
-  "Public Health & Epidemiology",
+  "Health & Human Performance",
 
-  // Business, Law & Society
-  "Financial Literacy & Investing", "Microeconomics & Global Trade", "Legal Reasoning & Law", 
-  "Project Management", "Entrepreneurial Strategy", "Public Speaking & Rhetoric", 
-  "Philosophy & Ethics", "Sociological Research", "Linguistics & Language Structure",
+  "Business, Law & Society",
+  
 
-  // Household & Life Skills
-  "Culinary Arts & Pastry", "Modern Home Economics", "Clothing Repair & Tailoring", 
-  "Furniture Restoration", "Personal Organization Systems", "Urban Gardening", 
-  "Plumbing & Electrical Basics", "Bicycle Maintenance"
+  "Household & Life Skills"
 ];
+
+// scripts/generate-post.js
 
 async function generateSkillTree() {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // 1. Fetch history to avoid repeats
-    const { data: recent } = await supabase.from('posts').select('title').limit(20);
-    const pastTitles = recent?.map(p => p.title).join(", ") || "None";
-    const category = skillCategories[Math.floor(Math.random() * skillCategories.length)];
+    const { data: allPosts } = await supabase
+      .from('posts')
+      .select('title');
+    
+    const existingTitles = allPosts?.map(p => p.title).join(", ") || "None";
 
-    // 2. Brainstorm a specific niche skill
-    const topicPrompt = `Select a very specific, factual, and useful skill to learn within the category of ${category}. 
-    It must be something specific (e.g., 'Identifying Edible Mushrooms' instead of 'Nature'). 
-    Avoid these previous skills: [${pastTitles}]. Return only the name of the skill.`;
+    // 2. THE "FORBIDDEN LIST" PROMPT
+    const topicPrompt = `
+      You are a curator for a world-class library. 
+      Target Category: ${category}.
+      
+      CRITICAL RULE: You must NOT write about anything even remotely similar to these existing titles:
+      [${existingTitles}]
+      
+      Task: Find a niche, factual skill that has ZERO keyword overlap with the list above. 
+      Think of obscure, highly specific, or unique skills.
+      Return ONLY the name of the new skill.
+    `;
+    
+    
     
     const topicRes = await model.generateContent(topicPrompt);
     const skillName = topicRes.response.text().trim();

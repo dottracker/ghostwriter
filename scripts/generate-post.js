@@ -59,7 +59,10 @@ async function generateSkillTree() {
     // 3. Generate the Roadmap
     const prompt = `
       You are a Senior Curriculum Architect. Create a literal, factual, and easy-to-understand learning roadmap for: "${skillName}".
-      
+      EDITORIAL GUIDELINES:
+        - Concept: It must be a distinct branch of knowledge.
+        - Vocabulary: Use specific terminology unique to this craft.
+        - Perspective: If a similar topic exists, approach this from a completely different angle (e.g., if you wrote about 'Woodworking', write this about 'Restoring 18th Century French Marquetry').
       Output strictly in JSON format:
       {
         "title": "${skillName}",

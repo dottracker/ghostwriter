@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: './.env.local' });
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -30,23 +30,39 @@ async function generateSkillTree() {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const { data: allPosts } = await supabase
-      .from('posts')
-      .select('title');
-    
-    const existingTitles = allPosts?.map(p => p.title).join(", ") || "None";
+    const category = skillCategories[Math.floor(Math.random() * skillCategories.length)];
+
+    // 2. Fetch TARGETED memory (Only same category + very recent)
+    const { data: sameCategory } = await supabase
+      .from('posts').select('title').eq('category', category).limit(40);
+    const { data: globalRecent } = await supabase
+      .from('posts').select('title').order('created_at', { ascending: false }).limit(20);
+
+    const contextTitles = [...new Set([
+      ...(sameCategory?.map(p => p.title) || []),
+      ...(globalRecent?.map(p => p.title) || [])
+    ])].join(" | ");
 
     // 2. THE "FORBIDDEN LIST" PROMPT
     const topicPrompt = `
-      You are a curator for a world-class library. 
-      Target Category: ${category}.
-      
-      CRITICAL RULE: You must NOT write about anything even remotely similar to these existing titles:
-      [${existingTitles}]
-      
-      Task: Find a niche, factual skill that has ZERO keyword overlap with the list above. 
-      Think of obscure, highly specific, or unique skills.
-      Return ONLY the name of the new skill.
+      You are the "Master Curriculum Architect" for a prestigious, multi-disciplinary academy. 
+      Your goal is to identify a highly specific, factual, and intellectually stimulating skill.
+
+      --- CURRENT DEPARTMENT ---
+      Category: ${category}
+
+      --- PREVIOUSLY ARCHIVED SKILLS (DO NOT REPEAT) ---
+      [${contextTitles}]
+
+      --- MANDATORY CONSTRAINTS ---
+      1. NO KEYWORD OVERLAP: The new skill name must not share any significant nouns or verbs with the archived skills.
+      2. BE LITERAL & FACTUAL: No poetic or vague titles (e.g., avoid "Whispers of the Stars").
+      3. BE SPECIFIC: Instead of "Gardening," choose "Cultivating Medicinal Fungi in Temperate Climates."
+      4. AVOID THE GENERIC: Stay away from "Introduction to...", "Mastering...", or "The Basics of...". 
+      5. ARCHIVAL DEPTH: Look for skills involving traditional crafts, specific scientific methods, obscure historical arts, or niche technical mastery.
+
+      --- OUTPUT ---
+      Return ONLY the name of the skill as a concise, high-level title. No punctuation or introductory text.
     `;
     
     
